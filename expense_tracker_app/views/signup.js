@@ -22,15 +22,15 @@ try{
     if(response.status ===201)
         window.location.href = "./login.html"
       else
-        throw new error('Failed to sinup') 
+        throw new error('Failed to signup') 
     }catch(err){
-            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err}</div>`;
+            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
             console.log(err);
          }
 
    nameInput.value='';
    emailInput.value='';
    passwordInput.value='';
-   confirmPasswordInput.value='';
+
 } 
 
