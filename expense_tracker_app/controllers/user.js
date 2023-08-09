@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const bcrypt = require('bcrypt');
 
 exports.signup = async(req, res, next) => {
   try{
@@ -18,17 +19,26 @@ exports.signup = async(req, res, next) => {
          return res.status(400).json({error: "User already exists"});
     }
     
-    const data = await User.create({
+
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds, async(err,hash) =>{
+      if(err){
+         console.log(err);
+         throw new Error("Something went wrong");
+      }
+
+      const data = await User.create({
         name: name,
-        email: email,
-        password: password
+        email: email,  
+        password: hash
        
+       })
     })
         res.status(201).json({message: "User signup successful"});
   }catch(err){
     console.log('Issue in signup', JSON.stringify(err));
-    res.status(500).json({
-        error: err
+    return res.status(500).json({
+        error: "Internal server error"
     })
   } 
       
@@ -47,10 +57,17 @@ exports.login = async(req, res, next) => {
       if(userData.length){
   
            const dbPassword = userData[0].dataValues.password;
-           if(password === dbPassword)
-               return res.status(200).json({message: "User Login Successful"});
-            else
-            return res.status(401).json({error: "Password is incorrect"});
+           bcrypt.compare(password, dbPassword, (err,result) => {
+               if(err){
+                  console.log(err);
+                  throw new Error('Something went wrong')
+               }
+
+               if(result == true)
+                  return res.status(200).json({message: "User Login Successful"});
+                else
+                  return res.status(401).json({error: "Password is incorrect"});
+           })
 
       }else
            return res.status(404).json({error: "User Not Found"});
@@ -58,7 +75,7 @@ exports.login = async(req, res, next) => {
     }catch(err){
       console.log('Issue in login', JSON.stringify(err));
       res.status(500).json({
-          error: err
+          error: "Internal server error"
       })
     } 
         
