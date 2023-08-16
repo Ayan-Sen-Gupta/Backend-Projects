@@ -1,5 +1,10 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+function generateAccessToken(id,name){
+  return jwt.sign({ userId : id, name: name}, '98jhsadiowjj78kasflsdk')
+}
 
 exports.signup = async(req, res, next) => {
   try{
@@ -54,6 +59,7 @@ exports.login = async(req, res, next) => {
           return res.status(400).json({error: "Some fields are missing"});
   
       const userData = await User.findAll({where: {email: email}});
+      console.log(userData);
       if(userData.length){
   
            const dbPassword = userData[0].dataValues.password;
@@ -64,8 +70,8 @@ exports.login = async(req, res, next) => {
                }
 
                if(result == true)
-                  return res.status(200).json({message: "User Login Successful"});
-                else
+                  return res.status(200).json({message: "User Login Successful", token: generateAccessToken(userData[0].dataValues.id, userData[0].dataValues.name) });
+               else
                   return res.status(401).json({error: "Password is incorrect"});
            })
 

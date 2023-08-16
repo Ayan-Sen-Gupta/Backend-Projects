@@ -15,10 +15,15 @@ try{
     };    
 
     const response = await axios.post("http://localhost:3000/user/login",myObj)
+    console.log(response);
+    
+        alert(`${response.data.message}`);
+        localStorage.setItem('token', response.data.token);
+       window.location.href = "./expense.html"
 
     }catch(err){
-            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
             console.log(err);
+            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
          }
 
    emailInput.value='';

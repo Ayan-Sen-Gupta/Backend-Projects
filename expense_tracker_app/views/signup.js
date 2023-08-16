@@ -19,13 +19,14 @@ try{
     const response = await axios.post("http://localhost:3000/user/signup",myObj)
 
     console.log(response);
-    if(response.status ===201)
-        window.location.href = "./login.html"
-      else
-        throw new error('Failed to signup') 
+    
+         alert(`${response.data.message}`);
+        window.location.href = "./login.html"       
+
     }catch(err){
-            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
             console.log(err);
+            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
+            
          }
 
    nameInput.value='';
