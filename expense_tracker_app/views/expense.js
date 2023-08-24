@@ -3,6 +3,7 @@ const itemNameInput = document.querySelector('#itemName');
 const amountInput = document.querySelector('#amount');
 const descriptionInput = document.querySelector('#description');
 const categoryInput = document.querySelector('#category');
+const buyPremium = document.querySelector('#razorpayButton');
 
 myForm.addEventListener('submit', onAddingExpense);
 
@@ -20,7 +21,7 @@ async function onAddingExpense(e){
         }; 
 
         const token = localStorage.getItem('token');
-        const response = await axios.post("http:localhost:3000/expense/add-expense",myObj, {headers: {'Authorization': token} })
+        const response = await axios.post("http://localhost:3000/expense/add-expense",myObj, {headers: {'Authorization': token} })
          console.log(response.data);
               showExpenseOnScreen(response.data);
             
@@ -46,7 +47,7 @@ async function onPageLoading(e){
        e.preventDefault();
 
        const token = localStorage.getItem('token');
-       const response = await axios.get("http:localhost:3000/expense/get-expense", {headers: {'Authorization': token} })
+       const response = await axios.get("http://localhost:3000/expense/get-expense", {headers: {'Authorization': token} })
         console.log(response);
 
         for(let i=0;i<response.data.length;i++){ 
@@ -88,7 +89,7 @@ function showExistingExpenseOnScreen(expense){
     async function deleteExpense(expenseId){ 
         try{
            const token = localStorage.getItem('token');
-           const response = await axios.delete(`http:localhost:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
+           const response = await axios.delete(`http://localhost:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
             removeExpenseFromScreen(expenseId); 
         }catch(err){
             console.log(err);
@@ -101,7 +102,7 @@ function showExistingExpenseOnScreen(expense){
         try{ 
     
             const token = localStorage.getItem('token');
-            const response = await axios.delete(`http:localhost:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
+            const response = await axios.delete(`http://localhost:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
              removeExpenseFromScreen(expenseId); 
 
              itemNameInput.value=itemName;   
@@ -114,3 +115,53 @@ function showExistingExpenseOnScreen(expense){
         document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
     }
 }
+
+buyPremium.addEventListener('click', onBuyingPremium );
+
+async function onBuyingPremium(e){
+    try{
+        e.preventDefault();
+        
+        const token = localStorage.getItem('token');
+        const response = await axios.get("http://localhost:3000/premium/buy-premium", {headers: {'Authorization': token} })
+        console.log(response.data);
+       
+        var options = {
+            "key": response.data.key_id, 
+            "order_id": response.data.order.id, 
+
+            "handler": async function(response){
+                console.log(response);
+                await axios.post("http://localhost:3000/premium/transaction",{ 
+                    order_id: response.razorpay_order_id,
+                    payment_id: response.razorpay_payment_id,
+            }, { headers: {"Authorization" : token}})
+
+              alert('Transaction Successful. You are a premium user now')
+           }
+             
+        }
+
+        const razorpay = new Razorpay(options);
+        razorpay.open();
+        
+
+        razorpay.on('payment.failed', async function(response){
+            console.log(response);
+
+            await axios.post("http://localhost:3000/premium/transaction",{ 
+                    order_id: options.order_id,
+                    payment_id: null
+            }, { headers: {"Authorization" : token}})
+
+            alert('Payment Failed');
+          });
+
+    }catch(err){
+        console.log(err);
+        document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
+
+    }
+
+}
+

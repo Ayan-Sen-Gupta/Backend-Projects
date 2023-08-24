@@ -16,6 +16,9 @@
 </head>
 <body>
    <div class = 'container'>
+    <div>
+      <button id="razorpayButton" style = "position:absolute; top:20px; right:20px;" class="btn btn-outline-dark">Buy Premium Membership</button> 
+    </div>
     <div class="border border-primary-subtle border-2 rounded border-opacity-50 p-2">
      <h2 style = "text-align:center;color:grey">Expense Tracker</h2>
      <form id="my-form" style="text-align:center"> 
@@ -45,6 +48,7 @@
      <ul id ="expenses"></ul>
       </div>
     </div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.0/axios.min.js"></script>
    <script src="expense.js"></script>    
 </body>

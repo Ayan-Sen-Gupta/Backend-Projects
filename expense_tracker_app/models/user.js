@@ -24,6 +24,7 @@ const User = sequelize.define('user', {
         allowNull: false,
       
       },
+    isPremiumUser: Sequelize.BOOLEAN
 
 });
 
