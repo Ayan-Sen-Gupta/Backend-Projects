@@ -11,4 +11,6 @@ router.get('/buy-premium', userAuthentication.authenticate, premiumController.bu
 
 router.post('/transaction', userAuthentication.authenticate, premiumController.onTransaction);
 
+router.get('/leaderboard', userAuthentication.authenticate, premiumController.getLeaderBoard);
+
 module.exports = router;
