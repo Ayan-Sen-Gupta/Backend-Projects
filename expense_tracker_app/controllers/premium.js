@@ -1,4 +1,5 @@
 const Razorpay = require('razorpay');
+const sequelize = require('../utilities/database');
 const Order = require('../models/premium');
 const Expense = require('../models/expense');
 const User = require('../models/user');
@@ -71,37 +72,25 @@ exports.onTransaction = async (req, res ) => {
     }
 }
 
-exports.getLeaderBoard = async (req, res ) => {
-    try {
+exports.getLeaderBoard = async (req, res) => {
+    try{
         const userId = req.user.id;
-        const expenses = await Expense.findAll();
-        const users = await User.findAll();
-        
-        const userAggregatedExpenses = {};
+        const leaderBoard = await User.findAll({
+            attributes: ['id', 'name',[sequelize.fn('sum', sequelize.col('expenses.expenseAmount')), 'total_expense'] ],
+            include: [
+                {
+                    model: Expense,
+                    attributes: []
+                }
+            ],
+            group:['id'],
+            order:[['total_expense', 'DESC']],
 
-        expenses.forEach((expense) => {
-          
-            const expenseUserId = expense.dataValues.userId;
-             const expenseAmount = expense.dataValues.expenseAmount;
-             
-            if(userAggregatedExpenses[expenseUserId])
-               userAggregatedExpenses[expenseUserId] = userAggregatedExpenses[expenseUserId] + expenseAmount;
-            else
-               userAggregatedExpenses[expenseUserId] = expenseAmount;
-        });
+        })
+       
+        res.status(200).json(leaderBoard);
      
-       var leaderBoard = [];
-       users.forEach((user) => {
-        const userName = user.dataValues.name;
-        const userId = user.dataValues.id;
-
-           leaderBoard.push({ name: userName, total_expense: userAggregatedExpenses[userId] || 0 });
-       });
-
-           leaderBoard.sort((a,b) => b.total_expense - a.total_expense);
-           res.status(200).json(leaderBoard);
-                
-    }catch(err) {
+     }catch(err) {
         console.log('Issue in getLeaderBoard', JSON.stringify(err));
         res.status(403).json({ 
             error: 'Something went wrong'
