@@ -1,3 +1,4 @@
+const sequelize = require('../utilities/database');
 const Expense = require('../models/expense');
 const User = require('../models/user');
 
@@ -18,6 +19,7 @@ exports.getExpense = async(req, res, next) => {
 }
 
 exports.addExpense = async(req, res, next) => {
+  const t = await sequelize.transaction();
   try{
 
     const itemName = req.body.itemName;
@@ -37,7 +39,7 @@ exports.addExpense = async(req, res, next) => {
         category: category,
         userId: req.user.id,
        
-    })
+    }, {transaction: t})
     )
      
     const promise2 = new Promise((resolve, reject) => {
@@ -45,30 +47,39 @@ exports.addExpense = async(req, res, next) => {
            aggregatedExpense = req.user.totalExpense + JSON.parse(amount);
 
         const result = User.update(
-            {totalExpense: aggregatedExpense}, { where: {id: req.user.id}}
+            {totalExpense: aggregatedExpense}, { where: {id: req.user.id}, transaction: t}
         )
 
         resolve(result);
       })
 
     Promise.all([promise1,promise2])
-          .then((values) => {
+          .then(async(values) => {
+             await t.commit();
             return res.status(201).json(values[0]);
           })
-          .catch(err => console.log(err));
+          .catch(async(err) => {
+                 await t.rollback();
+                 console.log(err);
+                 res.status(500).json({
+                  error: "Internal server error"
+                })
+          });
      
           
   }catch(err){
+    await t.rollback();
     console.log('Issue in addExpense', JSON.stringify(err));
     res.status(500).json({
         error: "Internal server error"
     })
-  } 
+  }
       
 }
 
 
 exports.deleteExpense = async (req, res, next) => {
+  const t = await sequelize.transaction();
   try{
     const expenseId = req.params.expenseId;
     if(!expenseId){
@@ -80,19 +91,21 @@ exports.deleteExpense = async (req, res, next) => {
     }
 
 
-    const data = await Expense.findOne({where: {id: expenseId, userId: req.user.id}});
-     const response = await Expense.destroy({where: {id: expenseId, userId: req.user.id}});
+    const data = await Expense.findOne({where: {id: expenseId, userId: req.user.id}, transaction: t });
+     const response = await Expense.destroy({where: {id: expenseId, userId: req.user.id}, transaction: t });
      if(response == 0)
         return res.status(404).json({error: "Expense does not belong to the user"})
 
         const amount = data.expenseAmount;
         aggregatedExpense = req.user.totalExpense - amount;
         const result = await User.update(
-           {totalExpense: aggregatedExpense}, { where: {id: req.user.id}}
-       )
-
+           {totalExpense: aggregatedExpense}, { where: {id: req.user.id}, transaction: t }
+       );
+      
+     await t.commit();
      res.status(200).json(response);
-    }catch(err){
+    }catch(err){  
+        await t.rollback();
         console.log('Issue in deleteExpense', JSON.stringify(err));
         res.status(500).json({
           error: "Internal server error"
