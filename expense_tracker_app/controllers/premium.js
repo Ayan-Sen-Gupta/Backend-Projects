@@ -76,15 +76,9 @@ exports.getLeaderBoard = async (req, res) => {
     try{
         const userId = req.user.id;
         const leaderBoard = await User.findAll({
-            attributes: ['id', 'name',[sequelize.fn('sum', sequelize.col('expenses.expenseAmount')), 'total_expense'] ],
-            include: [
-                {
-                    model: Expense,
-                    attributes: []
-                }
-            ],
-            group:['id'],
-            order:[['total_expense', 'DESC']],
+            
+            attributes: ['id', 'name','totalExpense'],
+            order:[['totalExpense', 'DESC']],
 
         })
        
