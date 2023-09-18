@@ -5,6 +5,7 @@ const descriptionInput = document.querySelector('#description');
 const categoryInput = document.querySelector('#category');
 const buyPremium = document.getElementById('razorpayButton');
 const leaderBoard = document.getElementById('leaderboard');
+const expenseReport = document.getElementById('expenseReport');
 
 
 myForm.addEventListener('submit', onAddingExpense);
@@ -72,6 +73,7 @@ async function onPageLoading(e){
           showPremiumUserMessage();
        }else{
           leaderBoard.style.visibility='hidden';
+          expenseReport.style.visibility='hidden';
        }
          
        const response = await axios.get("http://localhost:3000/expense/get-expense", {headers: {'Authorization': token} })
@@ -168,6 +170,9 @@ async function onBuyingPremium(e){
 
              showPremiumUserMessage();
 
+             leaderBoard.style.visibility='visible';
+             expenseReport.style.visibility='visible';
+
               localStorage.setItem('token', res.data.token);
 
            }
@@ -205,9 +210,7 @@ async function showLeaderBoard(e){
     try{
         e.preventDefault();
  
-        const token = localStorage.getItem('token');
-  
-          
+        const token = localStorage.getItem('token'); 
         const response = await axios.get("http://localhost:3000/premium/leaderboard", {headers: {'Authorization': token} });
          console.log(response);
  
@@ -224,7 +227,27 @@ async function showLeaderBoard(e){
 function showPremiumUsers(users){ 
             
     let parentNode=document.getElementById('premiumUsers');
-    let childHTML=`<li>${users.name} - ${users.total_expense}</li>`;
+    let childHTML=`<li>${users.name} - ${users.totalExpense}</li>`;
     parentNode.innerHTML=parentNode.innerHTML+childHTML;
+}
+
+expenseReport.addEventListener('click', downloadExpenseReport );
+
+async function downloadExpenseReport(e){
+    try{
+        e.preventDefault();
+ 
+        const token = localStorage.getItem('token'); 
+        const response = await axios.get("http://localhost:3000/premium/expense-report", {headers: {'Authorization': token} });
+
+       var anchorTag = document.createElement("a");
+       anchorTag.href = response.data.fileUrl;
+       anchorTag.download = "myexpense.csv";
+       anchorTag.click();
+                     
+         }catch(err){
+             console.log(err);
+             document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
+         }
 }
 
