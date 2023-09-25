@@ -8,6 +8,7 @@ const leaderBoard = document.getElementById('leaderboard');
 const expenseReport = document.getElementById('expenseReport');
 
 
+
 myForm.addEventListener('submit', onAddingExpense);
 
 async function onAddingExpense(e){
@@ -74,6 +75,7 @@ async function onPageLoading(e){
        }else{
           leaderBoard.style.visibility='hidden';
           expenseReport.style.visibility='hidden';
+          
        }
          
        const response = await axios.get("http://localhost:3000/expense/get-expense", {headers: {'Authorization': token} })
@@ -238,16 +240,47 @@ async function downloadExpenseReport(e){
         e.preventDefault();
  
         const token = localStorage.getItem('token'); 
-        const response = await axios.get("http://localhost:3000/premium/expense-report", {headers: {'Authorization': token} });
+        const response1 = await axios.get("http://localhost:3000/premium/download-expense-report", {headers: {'Authorization': token} });
+        console.log(response1);
 
-       var anchorTag = document.createElement("a");
-       anchorTag.href = response.data.fileUrl;
-       anchorTag.download = "myexpense.csv";
-       anchorTag.click();
+       var link = document.createElement("a");
+        link.href = response1.data.fileUrl;
+        link.download = "myexpense.csv";
+        link.click();
+
+        var parentNode = document.getElementById('downloadReport');
+        parentNode.innerHTML = '<h4 class="title" style="text-align: left;color:blueviolet">Downloaded Expense Report: </h4>'
+
+        showDownloadedLink(response1.data);
+ 
+
+        const response2 = await axios.get("http://localhost:3000/premium/downloaded-expense-reports", {headers: {'Authorization': token} });
+        console.log(response2);
+        for(let i=0; i<response2.data.expenseReports.length;i++){
+            showExistingDownloadedLink(response2.data.expenseReports[i]);
+        }
+
+        
+        
                      
          }catch(err){
              console.log(err);
              document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
          }
+}
+
+function showDownloadedLink(link){ 
+            
+    let parentNode=document.getElementById('downloadReport');
+    let childHTML=`<li>Date - ${new Date()}} -> Link - ${link.fileUrl}</li>`;
+    parentNode.innerHTML=parentNode.innerHTML+childHTML;
+}
+
+function showExistingDownloadedLink(link){
+
+    let parentNode=document.getElementById('downloadReport');
+    let childHTML=`<li>Date - ${link.createdAt} -> Link - ${link.fileUrl} </li>`;
+    parentNode.innerHTML=parentNode.innerHTML+childHTML;
+
 }
 

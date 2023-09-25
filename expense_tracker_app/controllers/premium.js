@@ -3,10 +3,11 @@ const sequelize = require('../utilities/database');
 const Order = require('../models/premium');
 const Expense = require('../models/expense');
 const User = require('../models/user');
+const ExpenseFile = require('../models/expense-file');
 const userController = require('./user');
-const dotenv  = require('dotenv');
+const UserServices = require('../services/user');
+const S3Services = require('../services/s3');  
 
-const result = dotenv.config();
 
 exports.buyPremium = async (req, res) => {
     try {
@@ -92,3 +93,41 @@ exports.getLeaderBoard = async (req, res) => {
 
     }
 }
+
+exports.downloadExpenseReport = async(req,res, next) => {
+    try{
+  
+     const expenses = await UserServices.getExpenses(req); 
+     const stringifiedExpenses = JSON.stringify(expenses); 
+  
+     const userId = req.user.id;
+     const fileName = `Expense${userId}/${new Date()}.txt`;
+     const fileUrl = await S3Services.uploadToS3(stringifiedExpenses, fileName);
+        
+     const data = await ExpenseFile.create({
+            fileUrl: fileUrl,
+            userId: req.user.id
+        });
+     res.status(200).json({ fileUrl, success: true});
+      }catch(err){
+          console.log(err);
+          res.status(500).json({fileUrl:'', success: false, error: 'Something went wrong'});
+   }
+  }
+
+  exports.getDownloadedExpenseReports = async(req,res, next) => {
+    try{
+  
+     const expenseReports = await ExpenseFile.findAll({
+               attributes: ['fileUrl', 'createdAt'],
+               where: {userId: req.user.id}, 
+               order:[['createdAt', 'DESC']] 
+            });
+   
+     res.status(200).json({ expenseReports, success: true});
+      }catch(err){
+          console.log(err);
+          res.status(500).json({fileUrl:'', success: false, error: 'Something went wrong'});
+   }
+  }
+  
