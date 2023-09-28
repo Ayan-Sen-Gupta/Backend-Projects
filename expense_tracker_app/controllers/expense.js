@@ -2,19 +2,46 @@ const sequelize = require('../utilities/database');
 const Expense = require('../models/expense');
 const User = require('../models/user');
 
+const itemsPerPage = 10;
 
 exports.getExpense = async(req, res, next) => {
-  try{
+ try{
+    const page = +req.query.page; 
+    const promise1 = new Promise((resolve,reject) => {
+      const expenses = Expense.findAll({
+         offset: (page-1) * itemsPerPage,
+         limit: itemsPerPage,
+         where: {userId: req.user.id}
+        });
+        resolve(expenses);
+    });
+    
+    const promise2 = new Promise((resolve, reject) => {
+      const totalItems = Expense.count();
+      resolve(totalItems);
+    });
 
-    const expenses = await Expense.findAll({where: {userId: req.user.id}});
-    res.status(200).json(expenses);
-  
-  }catch(err){
-    console.log('Issue in getExpense', JSON.stringify(err));
-    res.status(500).json({
-      error: "Internal server error"
-    })
-  }
+    const values = await Promise.all([promise1,promise2]);
+    
+    const expenses = values[0];
+    const totalItems =  values[1];
+           
+    res.status(200).json({
+              expenses: expenses,
+              previousPage: page-1,
+              currentPage: page, 
+              nextPage: page+1, 
+              hasPreviousPage: page>1,
+              hasNextPage: (itemsPerPage*page) < totalItems, 
+              lastPage: Math.ceil(totalItems/itemsPerPage),
+               
+             })
+          }catch(err){
+            console.log('Issue in getExpense', JSON.stringify(err));
+            res.status(500).json({
+              error: "Internal server error"
+            })
+          }
 
 }
 
@@ -53,19 +80,10 @@ exports.addExpense = async(req, res, next) => {
         resolve(result);
       })
 
-    Promise.all([promise1,promise2])
-          .then(async(values) => {
+    const values = await Promise.all([promise1,promise2]);
+          
              await t.commit();
-            return res.status(201).json(values[0]);
-          })
-          .catch(async(err) => {
-                 await t.rollback();
-                 console.log(err);
-                 res.status(500).json({
-                  error: "Internal server error"
-                })
-          });
-     
+            return res.status(201).json(values[0]);    
           
   }catch(err){
     await t.rollback();

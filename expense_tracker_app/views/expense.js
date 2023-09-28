@@ -6,16 +6,14 @@ const categoryInput = document.querySelector('#category');
 const buyPremium = document.getElementById('razorpayButton');
 const leaderBoard = document.getElementById('leaderboard');
 const expenseReport = document.getElementById('expenseReport');
-
+const pagination = document.querySelector('.pagination');
 
 
 myForm.addEventListener('submit', onAddingExpense);
-
 async function onAddingExpense(e){
-
   try{
   
-    e.preventDefault();
+        e.preventDefault();
 
         let myObj = {
             itemName:itemNameInput.value,
@@ -32,10 +30,8 @@ async function onAddingExpense(e){
       }catch(err){
         console.log(err);
         document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
-            
-         }
+    }
    
-
    //Clear fields
    itemNameInput.value='';
    amountInput.value='';
@@ -44,9 +40,46 @@ async function onAddingExpense(e){
 
 } 
 
-function showPremiumUserMessage(){
-    buyPremium.style.visibility = 'hidden';
-    document.getElementById('message').innerHTML='<div style="color:blue;position:absolute; top:20px; right:20px;">Premium Member</div>';
+function showExpenseOnScreen(expense){ 
+            
+    let parentNode=document.getElementById('expenses');
+    let childHTML=`<li id=${expense.id}>${expense.itemName} - Rs.${expense.expenseAmount} - ${expense.description} - ${expense.category}
+                    <button onclick=editExpense(${expense.id},'${expense.itemName}',${expense.expenseAmount},'${expense.description}','${expense.category}')>Edit</button>
+                    <button onclick=deleteExpense(${expense.id})>Delete</button></li>`;
+    parentNode.innerHTML=parentNode.innerHTML+childHTML;
+}
+
+
+window.addEventListener('DOMContentLoaded', onPageLoading);
+async function onPageLoading(e){
+    try{
+       e.preventDefault();
+
+       const token = localStorage.getItem('token');
+       const decodedToken = parseJwt (token);
+       const premiumUser = decodedToken.premiumUser
+       if(premiumUser){
+          showPremiumUserMessage();
+       }else{
+          leaderBoard.style.visibility='hidden';
+          expenseReport.style.visibility='hidden';
+          
+       }
+
+       const page=1;     
+       const response = await axios.get(`http://localhost:3000/expense/get-expense?page=${page}`, {headers: {'Authorization': token} })
+       console.log(response);
+
+        for(let i=0;i<response.data.expenses.length;i++){ 
+                showExistingExpenseOnScreen(response.data.expenses[i]);
+            }
+
+            showPagination(response.data);
+                    
+        }catch(err){
+            console.log(err);
+            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
+        }
 
 }
 
@@ -59,39 +92,12 @@ function parseJwt (token) {
 
     return JSON.parse(jsonPayload);
 }
-    
-window.addEventListener('DOMContentLoaded', onPageLoading);
 
-async function onPageLoading(e){
-    try{
-       e.preventDefault();
-
-       const token = localStorage.getItem('token');
-       const decodedToken = parseJwt (token);
-       console.log(decodedToken);
-       const premiumUser = decodedToken.premiumUser
-       if(premiumUser){
-          showPremiumUserMessage();
-       }else{
-          leaderBoard.style.visibility='hidden';
-          expenseReport.style.visibility='hidden';
-          
-       }
-         
-       const response = await axios.get("http://localhost:3000/expense/get-expense", {headers: {'Authorization': token} })
-        console.log(response);
-
-        for(let i=0;i<response.data.length;i++){ 
-                showExistingExpenseOnScreen(response.data[i]);
-            }
-                    
-        }catch(err){
-            console.log(err);
-            document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
-        }
+function showPremiumUserMessage(){
+    buyPremium.style.visibility = 'hidden';
+    document.getElementById('message').innerHTML='<div style="color:blue;position:absolute; top:20px; right:20px;">Premium Member</div>';
 
 }
-   
 
 function showExistingExpenseOnScreen(expense){ 
     let parentNode=document.getElementById('expenses');
@@ -101,21 +107,65 @@ function showExistingExpenseOnScreen(expense){
     parentNode.innerHTML=parentNode.innerHTML+childHTML;
 }
 
-        
-   function showExpenseOnScreen(expense){ 
-            
-        let parentNode=document.getElementById('expenses');
-        let childHTML=`<li id=${expense.id}>${expense.itemName} - Rs.${expense.expenseAmount} - ${expense.description} - ${expense.category}
-                        <button onclick=editExpense(${expense.id},'${expense.itemName}',${expense.expenseAmount},'${expense.description}','${expense.category}')>Edit</button>
-                        <button onclick=deleteExpense(${expense.id})>Delete</button></li>`;
-        parentNode.innerHTML=parentNode.innerHTML+childHTML;
-    }
+function showPagination({previousPage,currentPage, nextPage, hasPreviousPage, hasNextPage, lastPage}){
+         pagination.innerHTML = '';
 
-    function removeExpenseFromScreen(expenseId){ 
-        let parentNode = document.getElementById('expenses');
-        let childNodeToBeDeleted= document.getElementById(expenseId);
-        parentNode.removeChild(childNodeToBeDeleted);         
-    }
+         if(hasPreviousPage){
+             const button1 = document.createElement('button');
+             button1.innerHTML = previousPage;
+             button1.addEventListener('click', () => getExpenses(previousPage));
+             pagination.appendChild(button1);
+         }
+
+         const button2 = document.createElement('button');
+             button2.innerHTML = `<h6>${currentPage}</h6>`;
+             button2.addEventListener('click', () => getExpenses(currentPage));
+             pagination.appendChild(button2);
+
+        if(hasNextPage && nextPage<lastPage){
+            const button3 = document.createElement('button');
+             button3.innerHTML = nextPage;
+             button3.addEventListener('click', () => getExpenses(nextPage));
+             pagination.appendChild(button3);
+        }
+        
+
+        if(hasNextPage && nextPage<(lastPage-1)){
+            const button4 = document.createElement('button');
+            button4.innerHTML = '...';
+            pagination.appendChild(button4);
+           }
+        
+  
+        if(+currentPage<lastPage){
+             const button5 = document.createElement('button');
+             button5.innerHTML = lastPage;
+             button5.addEventListener('click', () => getExpenses(lastPage));
+             pagination.appendChild(button5);
+        }
+        
+}
+
+async function getExpenses(page){
+     try{
+        let parentNode=document.getElementById('expenses');
+        parentNode.innerHTML = '';
+
+        const token = localStorage.getItem('token'); 
+        const response = await axios.get(`http://localhost:3000/expense/get-expense?page=${page}`, {headers: {'Authorization': token} })
+        console.log(response);
+        for(let i=0;i<response.data.expenses.length;i++){ 
+            showExistingExpenseOnScreen(response.data.expenses[i]);
+        }
+ 
+             showPagination(response.data);
+                     
+         }catch(err){
+             console.log(err);
+             document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
+         }
+        }
+
         
     async function deleteExpense(expenseId){ 
         try{
@@ -128,6 +178,7 @@ function showExistingExpenseOnScreen(expense){
             }
         
 }
+
 
     async function editExpense(expenseId,itemName,amount,description,category){
         try{ 
@@ -147,8 +198,14 @@ function showExistingExpenseOnScreen(expense){
     }
 }
 
-buyPremium.addEventListener('click', onBuyingPremium );
+function removeExpenseFromScreen(expenseId){ 
+    let parentNode = document.getElementById('expenses');
+    let childNodeToBeDeleted= document.getElementById(expenseId);
+    parentNode.removeChild(childNodeToBeDeleted);         
+}
 
+
+buyPremium.addEventListener('click', onBuyingPremium );
 async function onBuyingPremium(e){
     try{
         e.preventDefault();
@@ -206,8 +263,8 @@ async function onBuyingPremium(e){
 
 }
 
-leaderBoard.addEventListener('click', showLeaderBoard );
 
+leaderBoard.addEventListener('click', showLeaderBoard );
 async function showLeaderBoard(e){
     try{
         e.preventDefault();
@@ -233,8 +290,8 @@ function showPremiumUsers(users){
     parentNode.innerHTML=parentNode.innerHTML+childHTML;
 }
 
-expenseReport.addEventListener('click', downloadExpenseReport );
 
+expenseReport.addEventListener('click', downloadExpenseReport );
 async function downloadExpenseReport(e){
     try{
         e.preventDefault();
@@ -259,10 +316,7 @@ async function downloadExpenseReport(e){
         for(let i=0; i<response2.data.expenseReports.length;i++){
             showExistingDownloadedLink(response2.data.expenseReports[i]);
         }
-
-        
-        
-                     
+                 
          }catch(err){
              console.log(err);
              document.body.innerHTML = document.body.innerHTML + `<div style="color:red;">${err.response.data.error}</div>`;
