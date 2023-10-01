@@ -2,16 +2,20 @@ const sequelize = require('../utilities/database');
 const Expense = require('../models/expense');
 const User = require('../models/user');
 
-const itemsPerPage = 10;
+
 
 exports.getExpense = async(req, res, next) => {
  try{
     const page = +req.query.page; 
+    const rows = +req.query.rows;
+    console.log(rows);
     const promise1 = new Promise((resolve,reject) => {
       const expenses = Expense.findAll({
-         offset: (page-1) * itemsPerPage,
-         limit: itemsPerPage,
+         offset: (page-1) * rows,
+         limit: rows,
+         order:[['id', 'DESC']],
          where: {userId: req.user.id}
+         
         });
         resolve(expenses);
     });
@@ -25,15 +29,22 @@ exports.getExpense = async(req, res, next) => {
     
     const expenses = values[0];
     const totalItems =  values[1];
+
+    let sentItemsPerPage;
+    if(totalItems>rows)
+       sentItemsPerPage = rows;
+      else
+       sentItemsPerPage = totalItems; 
            
     res.status(200).json({
               expenses: expenses,
+              sentItemsPerPage: sentItemsPerPage,
               previousPage: page-1,
               currentPage: page, 
               nextPage: page+1, 
               hasPreviousPage: page>1,
-              hasNextPage: (itemsPerPage*page) < totalItems, 
-              lastPage: Math.ceil(totalItems/itemsPerPage),
+              hasNextPage: (rows*page) < totalItems, 
+              lastPage: Math.ceil(totalItems/rows),
                
              })
           }catch(err){

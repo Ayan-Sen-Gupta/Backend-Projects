@@ -7,6 +7,7 @@ const buyPremium = document.getElementById('razorpayButton');
 const leaderBoard = document.getElementById('leaderboard');
 const expenseReport = document.getElementById('expenseReport');
 const pagination = document.querySelector('.pagination');
+const rowsPerPage = document.getElementById('rows');
 
 
 myForm.addEventListener('submit', onAddingExpense);
@@ -41,12 +42,19 @@ async function onAddingExpense(e){
 } 
 
 function showExpenseOnScreen(expense){ 
-            
+              
     let parentNode=document.getElementById('expenses');
     let childHTML=`<li id=${expense.id}>${expense.itemName} - Rs.${expense.expenseAmount} - ${expense.description} - ${expense.category}
                     <button onclick=editExpense(${expense.id},'${expense.itemName}',${expense.expenseAmount},'${expense.description}','${expense.category}')>Edit</button>
                     <button onclick=deleteExpense(${expense.id})>Delete</button></li>`;
-    parentNode.innerHTML=parentNode.innerHTML+childHTML;
+    parentNode.innerHTML=childHTML + parentNode.innerHTML;
+
+    let sentItemsPerPage = localStorage.getItem('sentItemsPerPage');
+    let rows = localStorage.getItem('rows');
+    if(sentItemsPerPage==rows){
+       let lastExpenseOfPage = parentNode.lastElementChild;
+        parentNode.removeChild(lastExpenseOfPage);
+    }
 }
 
 
@@ -66,9 +74,12 @@ async function onPageLoading(e){
           
        }
 
-       const page=1;     
-       const response = await axios.get(`http://localhost:3000/expense/get-expense?page=${page}`, {headers: {'Authorization': token} })
+       const page=1; 
+       localStorage.setItem('page', page);
+       const rows = localStorage.getItem('rows');
+       const response = await axios.get(`http://localhost:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
        console.log(response);
+       localStorage.setItem('sentItemsPerPage', response.data.sentItemsPerPage);
 
         for(let i=0;i<response.data.expenses.length;i++){ 
                 showExistingExpenseOnScreen(response.data.expenses[i]);
@@ -152,8 +163,12 @@ async function getExpenses(page){
         parentNode.innerHTML = '';
 
         const token = localStorage.getItem('token'); 
-        const response = await axios.get(`http://localhost:3000/expense/get-expense?page=${page}`, {headers: {'Authorization': token} })
+        localStorage.setItem('page', page);
+        const rows = localStorage.getItem('rows');
+        const response = await axios.get(`http://localhost:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
         console.log(response);
+        localStorage.setItem('totalItems', response.data.totalItems);
+
         for(let i=0;i<response.data.expenses.length;i++){ 
             showExistingExpenseOnScreen(response.data.expenses[i]);
         }
@@ -336,5 +351,14 @@ function showExistingDownloadedLink(link){
     let childHTML=`<li>Date - ${link.createdAt} -> Link - ${link.fileUrl} </li>`;
     parentNode.innerHTML=parentNode.innerHTML+childHTML;
 
+}
+
+
+rowsPerPage.addEventListener('change', getRowsPerPage);
+async function getRowsPerPage(){
+   
+    const page = localStorage.getItem('page');
+    localStorage.setItem('rows', rowsPerPage.value);
+    getExpenses(page);
 }
 
