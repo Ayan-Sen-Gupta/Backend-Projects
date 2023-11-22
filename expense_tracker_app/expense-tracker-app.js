@@ -7,6 +7,7 @@ const dotenv  = require('dotenv');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
+dotenv.config();
 
 const sequelize = require('./utilities/database');
 const errorController = require('./controllers/error');
@@ -21,7 +22,7 @@ const expenseRoutes = require('./routes/expense');
 const premiumRoutes = require('./routes/premium');
 const passwordRoutes = require('./routes/password-request');
 
-dotenv.config();
+
 const app = express(); 
 
 app.set('views', 'views');
@@ -43,6 +44,11 @@ app.use('/user', userRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/premium', premiumRoutes);
 app.use('/password', passwordRoutes);
+
+
+app.use((req,res) => {
+   res.sendFile(path.join(__dirname, `public/${req.url}`));
+ });
 app.use(errorController.get404);
 
 User.hasMany(Expense);
