@@ -14,12 +14,14 @@ try{
       password: passwordInput.value
     };    
 
-    const response = await axios.post("http://localhost:3000/user/login",myObj)
+    const response = await axios.post("http://52.65.134.146:3000/user/login",myObj)
     console.log(response);
     
         alert(`${response.data.message}`);
         localStorage.setItem('token', response.data.token);
-       window.location.href = "./expense.html"
+        window.location.href = "./expense.html"
+       
+       
 
     }catch(err){
             console.log(err);
@@ -30,4 +32,8 @@ try{
    passwordInput.value='';
 
 } 
+
+
+
+
 
