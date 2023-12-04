@@ -1,12 +1,14 @@
 const User = require('../models/user');
+const sequelize = require('../utilities/database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-function generateAccessToken(id,name){
-  return jwt.sign({ userId : id, name: name}, '98jhsadiowjj78kasflsdk')
+const generateAccessToken = (id,name, premiumUserStatus) =>{
+  return jwt.sign({ userId : id, name: name, premiumUser: premiumUserStatus}, '98jhsadiowjj78kasflsdk')
 }
 
-exports.signup = async(req, res, next) => {
+
+const signup = async(req, res, next) => {
   try{
 
     const name = req.body.name;
@@ -49,7 +51,7 @@ exports.signup = async(req, res, next) => {
       
 }
 
-exports.login = async(req, res, next) => {
+const login = async(req, res, next) => {
     try{
   
       const email = req.body.email;
@@ -59,7 +61,7 @@ exports.login = async(req, res, next) => {
           return res.status(400).json({error: "Some fields are missing"});
   
       const userData = await User.findAll({where: {email: email}});
-      console.log(userData);
+     
       if(userData.length){
   
            const dbPassword = userData[0].dataValues.password;
@@ -70,7 +72,7 @@ exports.login = async(req, res, next) => {
                }
 
                if(result == true)
-                  return res.status(200).json({message: "User Login Successful", token: generateAccessToken(userData[0].dataValues.id, userData[0].dataValues.name) });
+                  return res.status(200).json({message: "User Login Successful", token: generateAccessToken(userData[0].dataValues.id, userData[0].dataValues.name, userData[0].dataValues.isPremiumUser) });
                else
                   return res.status(401).json({error: "Password is incorrect"});
            })
@@ -86,6 +88,18 @@ exports.login = async(req, res, next) => {
     } 
         
   }
+
+
+
+  module.exports = {
+     generateAccessToken,
+     signup,
+     login
+  }
+
+ 
+
+  
 
 
 

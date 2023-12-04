@@ -8,7 +8,7 @@ exports.getExpense = async(req, res, next) => {
  try{
     const page = +req.query.page; 
     const rows = +req.query.rows;
-    console.log(rows);
+    
     const promise1 = new Promise((resolve,reject) => {
       const expenses = Expense.findAll({
          offset: (page-1) * rows,
@@ -92,9 +92,9 @@ exports.addExpense = async(req, res, next) => {
       })
 
     const values = await Promise.all([promise1,promise2]);
-          
+    const data = values[0];
              await t.commit();
-            return res.status(201).json(values[0]);    
+            return res.status(201).json(data);    
           
   }catch(err){
     await t.rollback();

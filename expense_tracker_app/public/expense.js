@@ -74,9 +74,14 @@ async function onPageLoading(e){
           
        }
 
-       const page=1; 
+       const page=1;
        localStorage.setItem('page', page);
-       const rows = localStorage.getItem('rows');
+       let rows = localStorage.getItem('rows');
+       if(!rows){
+           rows = 5;
+           localStorage.setItem('rows', rows);
+       }
+
        const response = await axios.get(`http://52.65.134.146:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
        console.log(response);
        localStorage.setItem('sentItemsPerPage', response.data.sentItemsPerPage);
@@ -342,6 +347,13 @@ function showDownloadedLink(link){
     let parentNode=document.getElementById('downloadReport');
     let childHTML=`<li>Date - ${new Date()}} -> Link - ${link.fileUrl}</li>`;
     parentNode.innerHTML=parentNode.innerHTML+childHTML;
+
+    let sentItemsPerPage = localStorage.getItem('sentItemsPerPage');
+    let rows = localStorage.getItem('rows');
+    if(sentItemsPerPage==rows){
+       let lastDownloadedLinkOfPage = parentNode.lastElementChild;
+        parentNode.removeChild(lastDownloadedLinkOfPage);
+    }
 }
 
 function showExistingDownloadedLink(link){

@@ -121,7 +121,8 @@ exports.downloadExpenseReport = async(req,res, next) => {
      const expenseReports = await ExpenseFile.findAll({
                attributes: ['fileUrl', 'createdAt'],
                where: {userId: req.user.id}, 
-               order:[['createdAt', 'DESC']] 
+               order:[['createdAt', 'DESC']],
+               limit: 5, 
             });
    
      res.status(200).json({ expenseReports, success: true});
