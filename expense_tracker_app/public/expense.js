@@ -24,7 +24,7 @@ async function onAddingExpense(e){
         }; 
 
         const token = localStorage.getItem('token');
-        const response = await axios.post("http://52.65.134.146:3000/expense/add-expense",myObj, {headers: {'Authorization': token} })
+        const response = await axios.post("http://54.253.203.18:3000/expense/add-expense",myObj, {headers: {'Authorization': token} })
          console.log(response.data);
               showExpenseOnScreen(response.data);
             
@@ -82,7 +82,7 @@ async function onPageLoading(e){
            localStorage.setItem('rows', rows);
        }
 
-       const response = await axios.get(`http://52.65.134.146:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
+       const response = await axios.get(`http://54.253.203.18:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
        console.log(response);
        localStorage.setItem('sentItemsPerPage', response.data.sentItemsPerPage);
 
@@ -170,7 +170,7 @@ async function getExpenses(page){
         const token = localStorage.getItem('token'); 
         localStorage.setItem('page', page);
         const rows = localStorage.getItem('rows');
-        const response = await axios.get(`http://52.65.134.146:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
+        const response = await axios.get(`http://54.253.203.18:3000/expense/get-expense?page=${page}&rows=${rows}`, {headers: {'Authorization': token} })
         console.log(response);
 
         for(let i=0;i<response.data.expenses.length;i++){ 
@@ -189,7 +189,7 @@ async function getExpenses(page){
     async function deleteExpense(expenseId){ 
         try{
            const token = localStorage.getItem('token');
-           const response = await axios.delete(`http://52.65.134.146:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
+           const response = await axios.delete(`http://54.253.203.18:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
             removeExpenseFromScreen(expenseId); 
         }catch(err){
             console.log(err);
@@ -203,7 +203,7 @@ async function getExpenses(page){
         try{ 
     
             const token = localStorage.getItem('token');
-            const response = await axios.delete(`http://52.65.134.146:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
+            const response = await axios.delete(`http://54.253.203.18:3000/expense/delete-expense/${expenseId}`, {headers: {'Authorization': token} })
              removeExpenseFromScreen(expenseId); 
 
              itemNameInput.value=itemName;   
@@ -230,7 +230,7 @@ async function onBuyingPremium(e){
         e.preventDefault();
         
         const token = localStorage.getItem('token');
-        const response = await axios.get("http://52.65.134.146:3000/premium/buy-premium", {headers: {'Authorization': token} })
+        const response = await axios.get("http://54.253.203.18:3000/premium/buy-premium", {headers: {'Authorization': token} })
         console.log(response.data);
        
         var options = {
@@ -239,7 +239,7 @@ async function onBuyingPremium(e){
 
             "handler": async function(response){
                 console.log(response);
-                const res = await axios.post("http://52.65.134.146:3000/premium/transaction",{ 
+                const res = await axios.post("http://54.253.203.18:3000/premium/transaction",{ 
                     order_id: response.razorpay_order_id,
                     payment_id: response.razorpay_payment_id,
             }, { headers: {"Authorization" : token}})
@@ -264,7 +264,7 @@ async function onBuyingPremium(e){
         razorpay.on('payment.failed', async function(response){
             console.log(response);
 
-            await axios.post("http://52.65.134.146:3000/premium/transaction",{ 
+            await axios.post("http://54.253.203.18:3000/premium/transaction",{ 
                     order_id: options.order_id,
                     payment_id: null
             }, { headers: {"Authorization" : token}})
@@ -289,7 +289,7 @@ async function showLeaderBoard(e){
         e.preventDefault();
  
         const token = localStorage.getItem('token'); 
-        const response = await axios.get("http://52.65.134.146:3000/premium/leaderboard", {headers: {'Authorization': token} });
+        const response = await axios.get("http://54.253.203.18:3000/premium/leaderboard", {headers: {'Authorization': token} });
          console.log(response);
  
          for(let i=0;i<response.data.length;i++){ 
@@ -316,7 +316,7 @@ async function downloadExpenseReport(e){
         e.preventDefault();
  
         const token = localStorage.getItem('token'); 
-        const response1 = await axios.get("http://52.65.134.146:3000/premium/download-expense-report", {headers: {'Authorization': token} });
+        const response1 = await axios.get("http://54.253.203.18:3000/premium/download-expense-report", {headers: {'Authorization': token} });
         console.log(response1);
 
        var link = document.createElement("a");
@@ -330,7 +330,7 @@ async function downloadExpenseReport(e){
         showDownloadedLink(response1.data);
  
 
-        const response2 = await axios.get("http://52.65.134.146:3000/premium/downloaded-expense-reports", {headers: {'Authorization': token} });
+        const response2 = await axios.get("http://54.253.203.18:3000/premium/downloaded-expense-reports", {headers: {'Authorization': token} });
         console.log(response2);
         for(let i=0; i<response2.data.expenseReports.length;i++){
             showExistingDownloadedLink(response2.data.expenseReports[i]);

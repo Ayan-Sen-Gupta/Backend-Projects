@@ -12,7 +12,7 @@ async function onSubmit(e) {
         email: emailInput.value,
       };    
   
-      const response = await axios.post("http://localhost:3000/password/forgot-password",myObj)
+      const response = await axios.post("http://54.253.203.18:3000/password/forgot-password",myObj)
       console.log(response);
       
           alert(`${response.data.message}`);       
