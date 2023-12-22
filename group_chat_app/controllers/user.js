@@ -1,16 +1,21 @@
 const User = require('../models/user');
 const sequelize = require('../utilities/database');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const generateAccessToken = (id,name) =>{
+  return jwt.sign({ userId : id, name: name}, '98jhsadiowjj78kasflsdk')
+}
+
 
 const signup = async(req, res, next) => {
   try{
 
     const name = req.body.name;
     const email = req.body.email;
-    const contact = req.body.contact;
     const password = req.body.password;
 
-    if(!name || !email || !password || !contact)
+    if(!name || !email || !password)
         return res.status(400).json({error: "Some fields are missing"});
 
     const emailData = await User.findAll({where: {email: email}});
@@ -46,9 +51,50 @@ const signup = async(req, res, next) => {
       
 }
 
+const login = async(req, res, next) => {
+    try{
+  
+      const email = req.body.email;
+      const password = req.body.password;
+
+      if(!email || !password)
+          return res.status(400).json({error: "Some fields are missing"});
+  
+      const userData = await User.findAll({where: {email: email}});
+     
+      if(userData.length){
+  
+           const dbPassword = userData[0].dataValues.password;
+           bcrypt.compare(password, dbPassword, (err,result) => {
+               if(err){
+                  console.log(err);
+                  throw new Error('Something went wrong')
+               }
+
+               if(result == true)
+                  return res.status(200).json({message: "User Login Successful", token: generateAccessToken(userData[0].dataValues.id, userData[0].dataValues.name) });
+               else
+                  return res.status(401).json({error: "Password is incorrect"});
+           })
+
+      }else
+           return res.status(404).json({error: "User Not Found"});
+      
+    }catch(err){
+      console.log('Issue in login', JSON.stringify(err));
+      res.status(500).json({
+          error: "Internal server error"
+      })
+    } 
+        
+  }
+
+
 
   module.exports = {
-     signup
+     generateAccessToken,
+     signup,
+     login
   }
 
  
