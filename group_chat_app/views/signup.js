@@ -31,7 +31,7 @@ try{
             
          }
 
-   nameInput.value='';
+   nameInput.value=''; 
    emailInput.value='';
    contactInput.value='';
    passwordInput.value='';
