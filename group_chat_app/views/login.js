@@ -18,8 +18,8 @@ try{
     console.log(response);
     
         alert(`${response.data.message}`);
-        localStorage.setItem('token', response.data.token);
-        window.location.href = "./expense.html"
+        localStorage.setItem('token', response.data.token);   
+        window.location.href = "./chat.html";
        
        
 
