@@ -13,9 +13,10 @@ const signup = async(req, res, next) => {
 
     const name = req.body.name;
     const email = req.body.email;
+    const contact = req.body.contact;
     const password = req.body.password;
 
-    if(!name || !email || !password)
+    if(!name || !email || !contact || !password)
         return res.status(400).json({error: "Some fields are missing"});
 
     const emailData = await User.findAll({where: {email: email}});
@@ -36,7 +37,8 @@ const signup = async(req, res, next) => {
 
       const data = await User.create({
         name: name,
-        email: email,  
+        email: email,
+        contact: contact,  
         password: hash
        
        })

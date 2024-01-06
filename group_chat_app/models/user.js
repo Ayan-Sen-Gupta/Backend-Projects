@@ -20,9 +20,9 @@ const User = sequelize.define('user', {
        
     },
     contact: {
-      type: Sequelize.NUMBER,
+      type: Sequelize.DOUBLE,
       allowNull: false,
-      unique: true
+    
     },
     password: {
         type: Sequelize.CHAR, 
