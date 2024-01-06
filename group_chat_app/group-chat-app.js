@@ -11,9 +11,11 @@ dotenv.config();
 const sequelize = require('./utilities/database');
 const errorController = require('./controllers/error');
 const User = require('./models/user');
+const Chat = require('./models/chat');
 
 
 const userRoutes = require('./routes/user');
+const chatRoutes = require('./routes/chat');
 
 
 
@@ -23,7 +25,7 @@ app.set('views', 'views');
 
 app.use(
    cors({
-      origin: "http://1.27.0.0.1:3306",
+      origin: "null",
       credentials: true
     })
 );
@@ -35,9 +37,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/user', userRoutes);
+app.use('/chat', chatRoutes);
 
 
 app.use(errorController.get404);
+
+User.hasMany(Chat);
+Chat.belongsTo(User);
 
 
 
