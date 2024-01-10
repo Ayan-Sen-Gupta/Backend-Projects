@@ -2,12 +2,28 @@ const sequelize = require('../utilities/database');
 const Chat = require('../models/chat');
 const User = require('../models/user');
 
+exports.getMessage = async(req, res, next) => {
+  try{
+
+       const messages = await Chat.findAll({ order: ['id'] });
+       console.log(messages);
+       
+       res.status(200).json(messages);
+      }catch(err){
+             console.log('Issue in getMessage', JSON.stringify(err));
+             res.status(500).json({
+               error: "Internal server error"
+             })
+           }
+ 
+ }
 
 exports.sendMessage = async(req, res, next) => {
   const t = await sequelize.transaction();
   try{
 
     const message = req.body.message;
+    console.log(message);
   
     const data = await Chat.create({
         userName: req.user.name,

@@ -5,9 +5,8 @@ const userAuthentication = require('../middlewares/authentication');
 
 const router = express.Router();
 
+router.get('/get-message', userAuthentication.authenticate, chatController.getMessage);
 
 router.post('/send-message', userAuthentication.authenticate, chatController.sendMessage);
-
-
 
 module.exports = router;
