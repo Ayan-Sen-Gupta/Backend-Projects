@@ -1,0 +1,43 @@
+{
+  "name": "backend-projects",
+  "version": "1.0.0",
+  "description": "",
+  "main": "expense_tracker_app/expense-tracker-app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node expense_tracker_app/expense-tracker-app.js",
+    "dev-start": "nodemon expense_tracker_app/expense-tracker-app.js",
+    "start-server": "node expense_tracker_app/expense-tracker-app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ayan-Sen-Gupta/Node-Js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ayan-Sen-Gupta/Node-Js/issues"
+  },
+  "homepage": "https://github.com/Ayan-Sen-Gupta/Node-Js#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1463.0",
+    "bcrypt": "^5.1.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express-handlebars": "^7.0.7",
+    "express.js": "^1.0.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.1",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.4.3",
+    "pug": "^3.0.2",
+    "razorpay": "^2.9.2",
+    "sequelize": "^6.32.1",
+    "sib-api-v3-sdk": "^8.5.0"
+  }
+}
