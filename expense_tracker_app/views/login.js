@@ -14,7 +14,7 @@ try{
       password: passwordInput.value
     };    
 
-    const response = await axios.post("http://54.253.203.18:3000/user/login",myObj)
+    const response = await axios.post("http://localhost:3000/user/login",myObj)
     console.log(response);
     
         alert(`${response.data.message}`);

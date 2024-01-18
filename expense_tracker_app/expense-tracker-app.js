@@ -10,7 +10,7 @@ const morgan = require('morgan');
 dotenv.config();
 
 const sequelize = require('./utilities/database');
-const errorController = require('./controllers/error');
+const errorController = require('./controllers/error'); 
 const User = require('./models/user');
 const Expense = require('./models/expense');
 const Order = require('./models/premium');
@@ -47,7 +47,7 @@ app.use('/password', passwordRoutes);
 
 
 app.use((req,res) => {
-   res.sendFile(path.join(__dirname, `public/${req.url}`));
+   res.sendFile(path.join(__dirname, `public/${req.url}`)); 
  });
 app.use(errorController.get404);
 
