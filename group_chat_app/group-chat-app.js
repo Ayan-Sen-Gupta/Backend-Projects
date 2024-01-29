@@ -12,10 +12,13 @@ const sequelize = require('./utilities/database');
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 const Chat = require('./models/chat');
+const Group = require('./models/group');
+const UserGroup = require('./models/user-group'); 
 
 
 const userRoutes = require('./routes/user');
-const chatRoutes = require('./routes/chat');
+const chatRoutes = require('./routes/chat'); 
+const groupRoutes = require('./routes/group'); 
 
 
 
@@ -38,12 +41,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/user', userRoutes);
 app.use('/chat', chatRoutes);
+app.use('/group', groupRoutes);
 
 
 app.use(errorController.get404);
 
 User.hasMany(Chat);
 Chat.belongsTo(User);
+
+Group.belongsToMany(User, { through: UserGroup });
+User.belongsToMany(Group, { through: UserGroup } );
+
+Group.hasMany(Chat);
+Chat.belongsTo(Group);
+
 
 
 
@@ -52,6 +63,6 @@ sequelize.sync()
             app.listen(process.env.PORT || 3000);
          })
          .catch(err => {
-            console.log(err); 
+            console.log(err);  
          }) 
 
