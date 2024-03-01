@@ -14,11 +14,13 @@ const User = require('./models/user');
 const Chat = require('./models/chat');
 const Group = require('./models/group');
 const UserGroup = require('./models/user-group'); 
+const GroupInvitation = require('./models/group-invitation');  
 
 
 const userRoutes = require('./routes/user');
 const chatRoutes = require('./routes/chat'); 
 const groupRoutes = require('./routes/group'); 
+const groupInvitationRoutes = require('./routes/group-invitation');
 
 
 
@@ -42,6 +44,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/user', userRoutes);
 app.use('/chat', chatRoutes);
 app.use('/group', groupRoutes);
+app.use('/group-invitation', groupInvitationRoutes);
 
 
 app.use(errorController.get404);
@@ -55,14 +58,17 @@ User.belongsToMany(Group, { through: UserGroup } );
 Group.hasMany(Chat);
 Chat.belongsTo(Group);
 
+User.hasMany(GroupInvitation);
+GroupInvitation.belongsTo(User);
 
 
 
-sequelize.sync()
+
+sequelize.sync({force: false})
          .then(result => {
             app.listen(process.env.PORT || 3000);
          })
          .catch(err => {
-            console.log(err);  
+            console.log(err);   
          }) 
 

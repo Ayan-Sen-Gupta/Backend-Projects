@@ -9,8 +9,12 @@ const Group = sequelize.define('group', {
       primaryKey: true,
     },
     groupName: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(25),
       allowNull: false,
+      unique: true,
+      validate: {
+        len: [1, 50],
+    },
       
     },
     createdBy: {

@@ -9,6 +9,6 @@ router.get('/get-groups', userAuthentication.authenticate, groupController.getGr
 
 router.post('/create-group', userAuthentication.authenticate, groupController.createGroup);
 
-router.post('/add-member', userAuthentication.authenticate, groupController.addMember);
+router.post('/add-groupowner', userAuthentication.authenticate, groupController.addGroupOwner);
 
 module.exports = router;
