@@ -1,6 +1,6 @@
 
 const myForm = document.querySelector('#my-form');
-const createGroupForm = document.querySelector('#creategroupform');
+const createGroupForm = document.querySelector('#creategroupform'); 
 const inviteMemberForm = document.querySelector('#invitememberform');
 const adminTaskForm = document.querySelector('#admintaskform');
 

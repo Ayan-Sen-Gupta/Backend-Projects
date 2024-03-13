@@ -11,26 +11,29 @@
 </head>
 <body>
   <h2 style = "text-align:center;color:grey">Group Chat</h2>
+  <div id="title" style = "text-align:center;color:darkblue"></div>
    <div class="sidebar">
       <div>
-        <button id="creategroup" style = "position:fixed; top:50px;" class="btn btn-outline-dark">Create Group</button> 
+        <button id="creategroup" style = "position:fixed; top:50px;" class="btn btn-outline-dark">Create Group</button>
+        <button id="admin" style = "position:fixed; top:50px;right:20px" class="btn btn-outline-dark">Admin Tasks</button>  
       </div>
       <ul class="group-list"></ul>
    </div>
    <div class = 'container'>
-    <div id="title"></div>
+    
     <div id="chat"></div>
   </div>
      <form id="my-form" style="text-align:center"> 
 
-       <input type="text" id="message" name="message" style = "position:fixed; bottom:20px; left:260px; right:160px; width: 69%;"  class="form-control" required placeholder="Enter Message">
-      <button class="btn btn-outline-dark" style = "position:fixed; bottom:20px; right:100px">Send</button><br>
+      <input type="file" id="files" name="file" style = "position:fixed; bottom:20px; left:260px;" multiple>
+      <input type="text" id="message" name="message" style = "position:fixed; bottom:20px; left:480px; right:160px; width: 59%;"  class="form-control" required placeholder="Enter Message">
+      <button class="btn btn-outline-dark" style = "position:fixed; bottom:20px; right:20px">Send</button><br>
       
      </form>
      <div>
-      <button id="onlineusers" style = "position:fixed; bottom:20px; right:20px;" class="btn btn-outline-dark">Online</button> 
+      <button id="groupmembers" style = "position:fixed; top:12px; right:20px;" class="btn btn-outline-dark">Members</button> 
     </div>
-    <div id="createGroupModal" class="modal">
+    <div id="creategroupmodal" class="modal">
       <div class="modal-content">
        <span class="creategroupclose">&times;</span>
        <h2 style = "text-align:center;color:grey">Create New Group</h2>
@@ -56,8 +59,28 @@
          </form>
       </div>
     </div>
+    <div id="admintaskmodal" class="modal">
+      <div class="modal-content">
+        <span class="admintaskclose">&times;</span>
+        <h2 style = "text-align:center;color:grey">Admin Tasks</h2>
+        <form id="admintaskform" style="text-align:center"> 
+
+          <label for="admintaskemail" class="form-label">User Email:</label>
+          <input type="text" id="admintaskemail" name="admintaskemail" required class="form-control" placeholder="Enter User Email"><br>
+             
+          <!-- <label for="admintaskgroupname" class="form-label">Group Name:</label>
+          <input type="text" id="admintaskgroupname" name="admintaskgroupname" required class="form-control" placeholder="Enter Group Name"> -->
+
+          <button type="button" id="makeadminbutton" class="btn btn-outline-dark">Make Admin</button> 
+          <button type="button" id="adduserbutton" class="btn btn-outline-dark">Add User</button>
+          <button type="button" id="removeuserbutton" class="btn btn-outline-dark">Remove User</button><br>
+
+        </form>
+      </div>
+    </div>
   </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.0/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
     <script src="chat.js"></script>   
 </body>
 </html>
