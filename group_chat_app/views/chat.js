@@ -1,18 +1,33 @@
+
 const myForm = document.querySelector('#my-form');
 const createGroupForm = document.querySelector('#creategroupform');
 const inviteMemberForm = document.querySelector('#invitememberform');
-const addMemberForm = document.querySelector('#addmemberform');
+const adminTaskForm = document.querySelector('#admintaskform');
+
+const createGroupModal = document.getElementById('creategroupmodal');
+const inviteMemberModal = document.getElementById('invitemembermodal');
+const adminTaskModal = document.getElementById('admintaskmodal');
+
+
+const createGroupButton = document.getElementById('creategroup');
+const adminTaskButton = document.querySelector('#admin');
+const createGroupCloseButton = document.querySelector('.creategroupclose');
+const inviteMemberCloseButton = document.querySelector('.invitememberclose');
+const adminTaskCloseButton = document.querySelector('.admintaskclose');
+const makeAdminButton = document.getElementById('makeadminbutton');
+const addUserButton = document.getElementById('adduserbutton');
+const removeUserButton = document.getElementById('removeuserbutton');
+
 const messageInput = document.querySelector('#message');
+const createGroupNameInput = document.querySelector('#creategroupname');
+const inviteMemberEmailInput = document.querySelector('#invitememberemail');
+const memberNameInput = document.querySelector('#membername');
+const adminTaskEmailInput = document.querySelector('#admintaskemail');
+
+
 let parentNode = document.getElementById('chat');
 let titleParentNode = document.getElementById('title');
-const createGroupButton = document.getElementById('creategroup');
-const createGroupNameInput = document.querySelector('#creategroupname');
-const createGroupCloseButton = document.querySelector('.creategroupclose');
-const inviteMemberEmailInput = document.querySelector('#invitememberemail');
-const inviteMemberCloseButton = document.querySelector('.invitememberclose');
-const memberNameInput = document.querySelector('#membername');
-const addMemberCloseButton = document.querySelector('.addmemberclose');
-const addMemberInput = document.querySelector('#addmember');
+
 
 myForm.addEventListener('submit', onSendingMessage);
 
@@ -25,28 +40,43 @@ async function onSendingMessage(e) {
         message: messageInput.value,
       };  
   
-      const token = localStorage.getItem('token');
       let groupId = localStorage.getItem('groupid');
       if(!groupId)
         groupId=0;
 
-      const response = await axios.post(`http://localhost:3000/chat/send-message/${groupId}`,myObj, {headers: {'Authorization': token} })
-      console.log(response);
+        const token = localStorage.getItem('token'); 
+        const socket = io('http://localhost:3000', {auth: { token: token} });
+   
+   
+            socket.on('connect', () => {
+            console.log(`You connected with id: ${socket.id}`);  
+            
+            socket.emit('send-message', myObj, groupId);
+   
+        });
+   
+        
+   
+         socket.on('received-message', data => {
+   
+         console.log(data);
 
-      if(!response)
-          alert(`${err.response.data.error}`);
-      
-      showMessageOnScreen(response.data);
+        if(!data)
+          alert('The message could not be sent');
+
+          showMessageOnScreen(data);
+         });
+  
           
   
       }catch(err){
               console.log(err);
-              alert(`${err.response.data.error}`);
+              alert('Message was not sent');
 
            }
   
      messageInput.value='';
-  
+
   } 
 
   function showMessageOnScreen(message){ 
@@ -63,13 +93,11 @@ async function onSendingMessage(e) {
     
        e.preventDefault();
 
-       getGroups();
-       getMessages();
-
-      const myInterval = setInterval(getMessages, 1000);
-
-       if(myInterval==1)
-        clearInterval(myInterval);
+       const email = localStorage.getItem('email');
+       
+       await getTitle();
+       await getGroups();
+       await getMessages();
 
     }catch(err){
       console.log(err);
@@ -124,7 +152,7 @@ else{
 
 } 
 
-const token = localStorage.getItem('token'); 
+
 
 let id = localStorage.getItem('lastid');
  if(!id)
@@ -133,7 +161,9 @@ let id = localStorage.getItem('lastid');
 let groupId = localStorage.getItem('groupid');
  if(!groupId)
      groupId=0;
+    
 
+    const token = localStorage.getItem('token'); 
   const response = await axios.get(`http://localhost:3000/chat/get-message/${groupId}?lastmessageid=${id}`, {headers: {'Authorization': token} })
  console.log(response);
   
@@ -192,15 +222,15 @@ function showNewMessageOnScreen(message){
 createGroupButton.addEventListener('click', openCreateGroupModal);
 function openCreateGroupModal(e){
   e.preventDefault();
-  const modal = document.getElementById('createGroupModal');
-  modal.style.display = 'block';
+  
+  createGroupModal.style.display = 'block';
 }
 
 createGroupCloseButton.addEventListener('click', closeCreateGroupModal);
 function closeCreateGroupModal(e){
   e.preventDefault();
-  const modal = document.getElementById('createGroupModal');
-  modal.style.display = 'none';
+  
+  createGroupModal.style.display = 'none';
 }
 
 createGroupForm.addEventListener('submit', onCreatingGroup);
@@ -269,16 +299,20 @@ async function onCreatingGroup(e) {
 
   };
   
-  function openGroup(groupId){
+  async function openGroup(groupId){
     try{ 
 
-        let oldMessages=[];
-        let stringifiedOldMessages= JSON.stringify(oldMessages);
+      let otherGroupMessages=[];
 
-        localStorage.setItem('groupid', groupId); 
-        localStorage.setItem('oldmessage', stringifiedOldMessages);
-        localStorage.setItem('lastid', 0);
-        getMessages();
+      let stringifiedOtherGroupMessages = JSON.stringify(otherGroupMessages);
+    
+      localStorage.setItem('oldmessage', stringifiedOtherGroupMessages);  
+      localStorage.setItem('groupid', groupId); 
+      localStorage.setItem('lastid', 0);
+
+       
+         getTitle();
+         getMessages();
   
       }catch(err){
     console.log(err);
@@ -287,10 +321,32 @@ async function onCreatingGroup(e) {
 };
 
 
+async function getTitle(){
+  
+  let groupId = localStorage.getItem('groupid');
+   if(!groupId)
+     groupId=0;
+
+  
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`http://localhost:3000/group/get-title/${groupId}`, {headers: {'Authorization': token} })
+
+  let childHTML = response.data.title;
+  titleParentNode.innerHTML = childHTML;
+}
+
+
 function openInviteMemberModal(groupId){
   localStorage.setItem('groupid', groupId);
-  const modal = document.getElementById('invitemembermodal');
-  modal.style.display = 'block';
+  
+  inviteMemberModal.style.display = 'block';
+}
+
+inviteMemberCloseButton.addEventListener('click', closeInviteMemberModal);
+function closeInviteMemberModal(e){
+  e.preventDefault();
+
+  inviteMemberModal.style.display = 'none';
 }
 
 inviteMemberForm.addEventListener('submit', onInvitingMember)
@@ -320,12 +376,116 @@ async function onInvitingMember(e) {
   
   } 
 
-inviteMemberCloseButton.addEventListener('click', closeInviteMemberModal);
-function closeInviteMemberModal(e){
+
+adminTaskButton.addEventListener('click', openAdminTaskModal);
+function openAdminTaskModal(e){
   e.preventDefault();
-  const modal = document.getElementById('invitemembermodal');
-  modal.style.display = 'none';
+ 
+  adminTaskModal.style.display = 'block';
 }
+
+adminTaskCloseButton.addEventListener('click', closeAdminTaskModal);
+function closeAdminTaskModal(e){
+  e.preventDefault();
+ 
+  adminTaskModal.style.display = 'none';
+}
+
+makeAdminButton.addEventListener('click', onMakingAdmin);
+async function onMakingAdmin(e) {
+   
+  try{
+      e.preventDefault();
+
+      let myObj={
+        email: adminTaskEmailInput.value,
+        
+      };  
+  
+      const groupId = localStorage.getItem('groupid');
+      if(!groupId)
+      groupId=0;
+
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`http://localhost:3000/admin/make-admin/${groupId}`,myObj, {headers: {'Authorization': token} })
+      console.log(response);
+      
+      alert(`${response.data.message}`);
+      
+  
+      }catch(err){
+              console.log(err);
+              alert(`${err.response.data.error}`);
+           }
+  
+     adminTaskEmailInput.value='';
+   
+  
+  } 
+
+addUserButton.addEventListener('click', onAddingUser);
+async function onAddingUser(e) {
+   
+  try{
+      e.preventDefault();
+
+      let myObj={
+        email: adminTaskEmailInput.value,
+        
+      };  
+  
+      const groupId = localStorage.getItem('groupid');
+      if(!groupId)
+      groupId=0;
+
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`http://localhost:3000/admin/add-user/${groupId}`,myObj, {headers: {'Authorization': token} })
+      console.log(response);
+      
+      alert(`${response.data.message}`);
+      
+  
+      }catch(err){
+              console.log(err);
+              alert(`${err.response.data.error}`);
+           }
+  
+     adminTaskEmailInput.value='';
+  
+  
+  } 
+
+removeUserButton.addEventListener('click', onRemovingUser);
+async function onRemovingUser(e) {
+   
+  try{
+      e.preventDefault();
+
+      let myObj={
+        email: adminTaskEmailInput.value,
+      
+      };  
+  
+      const groupId = localStorage.getItem('groupid');
+      if(!groupId)
+      groupId=0;
+
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`http://localhost:3000/admin/remove-user/${groupId}`,myObj, {headers: {'Authorization': token} })
+      console.log(response);
+      
+      alert(`${response.data.message}`);
+      
+  
+      }catch(err){
+              console.log(err);
+              alert(`${err.response.data.error}`);
+           }
+  
+     adminTaskEmailInput.value='';
+  
+  
+  } 
 
 
 
