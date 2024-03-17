@@ -1,5 +1,6 @@
 
 const myForm = document.querySelector('#my-form');
+const fileForm = document.querySelector('#file-form');
 const createGroupForm = document.querySelector('#creategroupform'); 
 const inviteMemberForm = document.querySelector('#invitememberform');
 const adminTaskForm = document.querySelector('#admintaskform');
@@ -19,6 +20,7 @@ const addUserButton = document.getElementById('adduserbutton');
 const removeUserButton = document.getElementById('removeuserbutton');
 
 const messageInput = document.querySelector('#message');
+const fileInput = document.getElementById('files');
 const createGroupNameInput = document.querySelector('#creategroupname');
 const inviteMemberEmailInput = document.querySelector('#invitememberemail');
 const memberNameInput = document.querySelector('#membername');
@@ -36,9 +38,11 @@ async function onSendingMessage(e) {
   try{
       e.preventDefault();
 
+    
       let myObj={
         message: messageInput.value,
-      };  
+        
+      };   
   
       let groupId = localStorage.getItem('groupid');
       if(!groupId)
@@ -82,6 +86,50 @@ async function onSendingMessage(e) {
   function showMessageOnScreen(message){ 
               
     let childHTML=`<li id=${message.id}>${message.userName} - ${message.message}</li>`;
+    parentNode.innerHTML=parentNode.innerHTML + childHTML;
+
+}
+
+fileForm.addEventListener('submit', onSendingFile);
+
+async function onSendingFile(e) {
+
+  try{
+    e.preventDefault();
+
+    const formData = new FormData(fileForm);
+
+      let groupId = localStorage.getItem('groupid');
+      if(!groupId)
+        groupId=0;
+
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`http://localhost:3000/chat/send-file/${groupId}`, formData, {headers: {'Authorization': token} })
+    console.log(response);
+
+    var link = document.createElement("a");
+        link.href = response.data.file;
+        link.download = "myfile";
+        link.click();
+  
+    
+    showFileOnScreen(response.data);
+
+        
+
+    }catch(err){
+            console.log(err);
+            alert(`${err.response.data.error}`);
+         }
+
+   fileInput.value='';
+   
+
+  } 
+
+  function showFileOnScreen(file){ 
+              
+    let childHTML=`<li>${file.chatData.userName} - ${file.file}</li>`;
     parentNode.innerHTML=parentNode.innerHTML + childHTML;
 
 }
@@ -166,11 +214,16 @@ let groupId = localStorage.getItem('groupid');
     const token = localStorage.getItem('token'); 
   const response = await axios.get(`http://localhost:3000/chat/get-message/${groupId}?lastmessageid=${id}`, {headers: {'Authorization': token} })
  console.log(response);
+
+ 
   
   for(let i=0;i<response.data.length;i++){ 
-          showNewMessageOnScreen(response.data[i]);
+
+       showNewMessageOnScreen(response.data[i]);
           count=count+1;
-      }
+
+  }
+    
 
 
       if(!response.data){
@@ -218,6 +271,7 @@ function showNewMessageOnScreen(message){
   parentNode.innerHTML=parentNode.innerHTML + childHTML;
 
 }
+
 
 createGroupButton.addEventListener('click', openCreateGroupModal);
 function openCreateGroupModal(e){

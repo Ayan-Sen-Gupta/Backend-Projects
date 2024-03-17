@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const sequelize = require('../utilities/database');
 const Chat = require('../models/chat');
 const User = require('../models/user');
+const S3Services = require('../services/s3'); 
 
 
 exports.onConnection = (io,socket) => {
@@ -58,6 +59,43 @@ exports.getMessage = async(req, res, next) => {
        res.status(200).json(messages);
       }catch(err){
              console.log('Issue in getMessage', JSON.stringify(err));
+             res.status(500).json({
+               error: "Internal server error"
+             })
+           }
+ 
+ }
+
+ exports.sendFile = async(req, res, next) => {
+
+  try{
+
+       const groupId = req.params.groupId;
+       const fileData = req.file.buffer;
+       const mimeType = req.file.mimetype;
+       const originalFileName = req.file.originalname;
+
+       if(!fileData)
+          return res.status(400).json({error: "File not found"}); 
+
+
+       const fileName = `${new Date()}/${originalFileName}`;
+
+       const file = await S3Services.uploadToS3(fileData, fileName);
+
+       const chatData = await Chat.create({
+        userName: req.user.name,
+        message: file,
+          type:  mimeType,
+        userId: req.user.id,
+        groupId: groupId
+       
+       });
+       
+       res.status(200).json({file,chatData});
+      }catch(err){
+           
+             console.log('Issue in sendFile', JSON.stringify(err));
              res.status(500).json({
                error: "Internal server error"
              })
