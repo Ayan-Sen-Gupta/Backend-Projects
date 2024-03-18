@@ -23,6 +23,7 @@ const io = socketIo(httpServer,{
 dotenv.config();
 
 const sequelize = require('./utilities/database');
+const cronJob = require('./utilities/cron');
 const errorController = require('./controllers/error');
 const chatController = require('./controllers/chat');
 const User = require('./models/user');
@@ -79,7 +80,7 @@ Chat.belongsTo(Group);
 User.hasMany(GroupInvitation);
 GroupInvitation.belongsTo(User);
 
-
+cronJob.start();
 
 
 sequelize.sync({force: false})
